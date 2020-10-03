@@ -11,7 +11,7 @@
 char dir[100];
 char ip[32];
 
-static void handle_events(int fd, int *wd, int argc, char *argv[])
+static void handle_events(int fd, int *wd, int fdHTML)
 {
     char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
     const struct inotify_event *event;
@@ -37,7 +37,7 @@ static void handle_events(int fd, int *wd, int argc, char *argv[])
 
         /* Loop over all events in the buffer */
 
-        char time_str[30]; // YYYY-MM-DD HH-MM-SS 
+        char time_str[30]; // YYYY-MM-DD HH-MM-SS
         for (ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len)
         {
             event = (const struct inotify_event *)ptr;
@@ -80,7 +80,7 @@ static void handle_events(int fd, int *wd, int argc, char *argv[])
 int main(int argc, char *argv[])
 {
     char buf;
-    int fd, i, poll_num;
+    int fd, fdHTML, poll_num;
     int *wd;
     nfds_t nfds;
     struct pollfd fds[2];
@@ -111,8 +111,9 @@ int main(int argc, char *argv[])
         }
     }
 
-    int log = open(); // apache index.html
-    if (log == -1)
+    fdHTML = open("/var/www/html/index.html", O_WRONLY | O_TRUNC);
+
+    if (fdHTML == -1)
         perror("open failed");
 
     printf("Press ENTER key to terminate.\n");
@@ -139,16 +140,12 @@ int main(int argc, char *argv[])
 	 - file was opened
 	 - file was closed */
 
-    for (i = 1; i < argc; i++)
+    wd = inotify_add_watch(fd, argv[i], IN_OPEN | IN_CLOSE);
+    if (*wd == -1)
     {
-        wd[i] = inotify_add_watch(fd, argv[i],
-                                  IN_OPEN | IN_CLOSE);
-        if (wd[i] == -1)
-        {
-            fprintf(stderr, "Cannot watch '%s'\n", argv[i]);
-            perror("inotify_add_watch");
-            exit(EXIT_FAILURE);
-        }
+        fprintf(stderr, "Cannot watch '%s'\n", argv[i]);
+        perror("inotify_add_watch");
+        exit(EXIT_FAILURE);
     }
 
     /* Prepare for polling */
@@ -167,7 +164,10 @@ int main(int argc, char *argv[])
 
     /* Wait for events and/or terminal input */
 
+
+    write(fdHTML, "<html><body>", strlen("<html><body>"));
     printf("Listening for events.\n");
+    
     while (1)
     {
         poll_num = poll(fds, nfds, -1);
@@ -205,7 +205,6 @@ int main(int argc, char *argv[])
     /* Close inotify file descriptor */
 
     close(fd);
-
     free(wd);
     exit(EXIT_SUCCESS);
 }
