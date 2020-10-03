@@ -186,7 +186,7 @@ int main(int argc, char *argv[])
             if (fds[1].revents & POLLIN)
             {
                 /* Inotify events are available */
-                handle_events(fd, wd, argc, argv);
+                handle_events(fd, wd, fdHTML);
             }
         }
     }
