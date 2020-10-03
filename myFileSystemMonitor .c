@@ -68,26 +68,23 @@ static void handle_events(int fd, int *wd, int fdHTML)
 
             /* Print the name of the watched directory */
 
-            for (i = 1; i < argc; ++i)
-            {
-                if (wd[i] == event->wd)
-                {
-                    printf("%s/", argv[i]);
-                    break;
-                }
-            }
+            if (*wd == event->wd)
+                strcat(mainBuf, dir);
 
             /* Print the name of the file */
 
             if (event->len)
-                printf("%s", event->name);
+            {
+                write(fdHTML, event->name, strlen(event->name));
+                strcat(mainBuf, event->name);
+            }
 
             /* Print type of filesystem object */
 
             if (event->mask & IN_ISDIR)
-                printf(" [directory]\n");
+                write(fdHTML, " -> [dir]<br>", strlen(" -> [dir]<br>"));
             else
-                printf(" [file]\n");
+                write(fdHTML, " -> [file]<br>", strlen(" -> [file]<br>"));
         }
     }
 }
