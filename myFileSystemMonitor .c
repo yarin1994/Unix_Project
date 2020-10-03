@@ -87,7 +87,7 @@ int main(int argc, char *argv[])
 
     if (argc != 5) // ./file -d [dir] -i [IP]
     {
-        perror("incorrect number of arguments")
+        perror("incorrect number of arguments");
     }
 
     int opt;
@@ -167,7 +167,7 @@ int main(int argc, char *argv[])
 
     write(fdHTML, "<html><body>", strlen("<html><body>"));
     printf("Listening for events.\n");
-    
+
     while (1)
     {
         poll_num = poll(fds, nfds, -1);
