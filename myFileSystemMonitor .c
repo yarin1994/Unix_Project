@@ -51,22 +51,22 @@ static void handle_events(int fd, int *wd, int fdHTML)
             memset(opBuf, 0, 16);
             event = (const struct inotify_event *)ptr;
 
-            /* Print event type */
-
             if (!(event->mask & IN_OPEN))
             {
                 memset(timeStrBuf, 0, sizeof(timeStrBuf));
                 currTime = time(NULL);
                 timeInfo = localtime(&currTime);
-                strftime(timeStrBuf, 26, "%Y-%b-%d : %H:%M:%S", timeInfo);
+                strftime(timeStrBuf, 26, "%Y-%b-%d at %H:%M:%S", timeInfo);
                 write(fdHTML, timeStrBuf, strlen(timeStrBuf));
                 write(fdHTML, ": ", strlen(": "));
 
                 if (event->mask & IN_CLOSE_NOWRITE)
-                    printf("IN_CLOSE_NOWRITE: ");
+                    strcpy(opBuf, "NO_WRITE: ");
                 if (event->mask & IN_CLOSE_WRITE)
-                    printf("IN_CLOSE_WRITE: ");
+                    strcpy(opBuf, "WRITE: ");
             }
+
+            write(fdHTML, opBuf, strlen(opBuf));
 
             /* Print the name of the watched directory */
 
