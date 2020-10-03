@@ -11,6 +11,8 @@
 char dir[100];
 char ip[32];
 
+static void handle_events(int fd, int *wd, int fdHTML);
+
 static void handle_events(int fd, int *wd, int fdHTML)
 {
     char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
@@ -56,7 +58,7 @@ static void handle_events(int fd, int *wd, int fdHTML)
                 memset(timeStrBuf, 0, sizeof(timeStrBuf));
                 currTime = time(NULL);
                 timeInfo = localtime(&currTime);
-                strftime(timeStrBuf, 26, "%Y-%m-%d %H:%M:%S", timeInfo);
+                strftime(timeStrBuf, 26, "%Y-%b-%d : %H:%M:%S", timeInfo);
                 write(fdHTML, timeStrBuf, strlen(timeStrBuf));
                 write(fdHTML, ": ", strlen(": "));
 
