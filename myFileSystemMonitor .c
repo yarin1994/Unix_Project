@@ -116,7 +116,7 @@ int main(int argc, char *argv[])
     if (fdHTML == -1)
         perror("open failed");
 
-    printf("Press ENTER key to terminate.\n");
+    printf("Press ENTER key to terminate the program.\n");
 
     /* Create the file descriptor for accessing the inotify API */
 
@@ -127,23 +127,14 @@ int main(int argc, char *argv[])
         exit(EXIT_FAILURE);
     }
 
-    /* Allocate memory for watch descriptors */
-
-    wd = calloc(argc, sizeof(int));
-    if (wd == NULL)
-    {
-        perror("calloc");
-        exit(EXIT_FAILURE);
-    }
-
     /* Mark directories for events
 	 - file was opened
 	 - file was closed */
 
-    wd = inotify_add_watch(fd, argv[i], IN_OPEN | IN_CLOSE);
+    wd = inotify_add_watch(fd, dir, IN_OPEN | IN_CLOSE);
     if (*wd == -1)
     {
-        fprintf(stderr, "Cannot watch '%s'\n", argv[i]);
+        fprintf(stderr, "Cannot watch '%s'\n", dir);
         perror("inotify_add_watch");
         exit(EXIT_FAILURE);
     }
