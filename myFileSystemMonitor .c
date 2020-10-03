@@ -37,19 +37,34 @@ static void handle_events(int fd, int *wd, int fdHTML)
 
         /* Loop over all events in the buffer */
 
-        char time_str[30]; // YYYY-MM-DD HH-MM-SS
+        char mainBuf[1024];
+        char timeStrBuf[32]; // YYYY-MM-DD HH-MM-SS
+        char opBuf[16];
+
         for (ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len)
         {
+            time_t currTime;
+            struct tm *timeInfo;
+            memset(mainBuf, 0, 1024); // clean both buffers before rewrite them
+            memset(opBuf, 0, 16);
             event = (const struct inotify_event *)ptr;
 
             /* Print event type */
 
-            if (event->mask & IN_OPEN)
-                printf("IN_OPEN: ");
-            if (event->mask & IN_CLOSE_NOWRITE)
-                printf("IN_CLOSE_NOWRITE: ");
-            if (event->mask & IN_CLOSE_WRITE)
-                printf("IN_CLOSE_WRITE: ");
+            if (!(event->mask & IN_OPEN))
+            {
+                memset(timeStrBuf, 0, sizeof(timeStrBuf));
+                currTime = time(NULL);
+                timeInfo = localtime(&currTime);
+                strftime(timeStrBuf, 26, "%Y-%m-%d %H:%M:%S", timeInfo);
+                write(fdHTML, timeStrBuf, strlen(timeStrBuf));
+                write(fdHTML, ": ", strlen(": "));
+
+                if (event->mask & IN_CLOSE_NOWRITE)
+                    printf("IN_CLOSE_NOWRITE: ");
+                if (event->mask & IN_CLOSE_WRITE)
+                    printf("IN_CLOSE_WRITE: ");
+            }
 
             /* Print the name of the watched directory */
 
@@ -80,7 +95,7 @@ static void handle_events(int fd, int *wd, int fdHTML)
 int main(int argc, char *argv[])
 {
     char buf;
-    int fd, fdHTML, poll_num;
+    int fd, fdHTML, poll_num, opt;
     int *wd;
     nfds_t nfds;
     struct pollfd fds[2];
@@ -90,7 +105,6 @@ int main(int argc, char *argv[])
         perror("incorrect number of arguments");
     }
 
-    int opt;
     while ((opt = getopt(argc, argv, "d:i:")) != -1)
     {
         switch (opt)
@@ -154,7 +168,6 @@ int main(int argc, char *argv[])
     fds[1].events = POLLIN;
 
     /* Wait for events and/or terminal input */
-
 
     write(fdHTML, "<html><body>", strlen("<html><body>"));
     printf("Listening for events.\n");
