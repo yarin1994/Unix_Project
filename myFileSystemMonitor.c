@@ -39,7 +39,6 @@ static void handle_events(int fd, int wd, int fdHTML)
     for (;;)
     {
         /* Read some events. */
-
         len = read(fd, buf, sizeof buf);
         if (len == -1 && errno != EAGAIN)
         {
@@ -109,9 +108,9 @@ static void handle_events(int fd, int wd, int fdHTML)
 void sendToServer(char *time_str, char *op_str, char *main_str)
 {
     /* in order to send the data, we need to create a new socket */
-    int sock;
-    sturct sockaddr_in sendrSocket = {0};
 
+    int sock;
+    struct sockaddr_in senderSocket = {0};
     senderSocket.sin_family = AF_INET;
     senderSocket.sin_port = htons(5555);
 
@@ -122,7 +121,7 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     }
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
-    if (connect(sock, (struct sockaddr *)&senserSocket, sizeof(senderSocket)) < 0)
+    if (connect(sock, (struct sockaddr *)&senderSocket, sizeof(senderSocket)) < 0)
     {
         perror("connect");
         exit(1);
@@ -130,24 +129,25 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
 
     char packet[2048];
     memset(packet, 0, sizof(packet));
+
     strcpy(packet, "\nFILE ACCESSED: ");
-	strcat(packet, main_str);
-	strcat(packet, "\nACCESS: ");
-	strcat(packet, op_str);
-	strcat(packet, "\nTIME OF ACCESS: ");
-	strcat(packet, time_str);
-	strcat(packet, "\n");
-	strcat(packet, "\0");
+    strcat(packet, main_str);
+    strcat(packet, "\nACCESS: ");
+    strcat(packet, op_str);
+    strcat(packet, "\nTIME OF ACCESS: ");
+    strcat(packet, time_str);
+    strcat(packet, "\n");
+    strcat(packet, "\0");
 
-	if ((int chsent = send(sock, packet, strlen(packet), 0)) < 0)
-	{
-		perror("recv");
-		exit(1);
-	}
+    int chsent;
+    if ((chsent = send(sock, packet, strlen(packet), 0)) < 0)
+    {
+        perror("recv");
+        exit(1);
+    }
 
-	close(sock);
-
-	exit(0);
+    close(sock);
+    exit(0);
 }
 
 int main(int argc, char *argv[])
