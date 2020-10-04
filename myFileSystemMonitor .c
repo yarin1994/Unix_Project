@@ -119,7 +119,7 @@ int main(int argc, char *argv[])
             break;
         }
         default:
-            printf("worng arguments\n");
+            printf("worng arguments!\n");
             break;
         }
     }
