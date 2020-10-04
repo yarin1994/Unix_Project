@@ -11,14 +11,13 @@
 char dir[100];
 char ip[32];
 
-static void handle_events(int fd, int *wd, int fdHTML);
+static void handle_events(int fd, int wd, int fdHTML);
 //void sendToServer(char *time_str, char *op_str, char *main_str);
 
-static void handle_events(int fd, int *wd, int fdHTML)
+static void handle_events(int fd, int wd, int fdHTML)
 {
     char buf[4096] __attribute__((aligned(__alignof__(struct inotify_event))));
     const struct inotify_event *event;
-    int i;
     ssize_t len;
     char *ptr;
 
@@ -71,7 +70,7 @@ static void handle_events(int fd, int *wd, int fdHTML)
 
             /* Print the name of the watched directory */
 
-            if (*wd == event->wd)
+            if (wd == event->wd)
                 strcat(mainBuf, dir);
 
             /* Print the name of the file */
@@ -103,8 +102,7 @@ static void handle_events(int fd, int *wd, int fdHTML)
 int main(int argc, char *argv[])
 {
     char buf;
-    int fd, fdHTML, poll_num, opt;
-    int *wd;
+    int fd, fdHTML, poll_num, opt, wd;
     nfds_t nfds;
     struct pollfd fds[2];
 
@@ -154,7 +152,7 @@ int main(int argc, char *argv[])
 	 - file was closed */
 
     wd = inotify_add_watch(fd, dir, IN_OPEN | IN_CLOSE);
-    if (*wd == -1)
+    if (wd == -1)
     {
         fprintf(stderr, "Cannot watch '%s'\n", dir);
         perror("inotify_add_watch");
@@ -217,6 +215,5 @@ int main(int argc, char *argv[])
     /* Close inotify file descriptor */
 
     close(fd);
-    free(wd);
     exit(EXIT_SUCCESS);
 }
