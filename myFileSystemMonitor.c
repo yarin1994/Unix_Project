@@ -95,6 +95,9 @@ static void handle_events(int fd, int wd, int fdHTML)
 void sendToServer(char *time_str, char *op_str, char *main_str)
 {
     /* in order to send the data, we need to create a new socket */
+    int sock;
+    char packet[2048];
+    
 }
 
 int main(int argc, char *argv[])
@@ -175,7 +178,7 @@ int main(int argc, char *argv[])
 
     write(fdHTML, "<html><body>", strlen("<html><body>"));
     printf("Listening for events.\n");
-
+    
     while (1)
     {
         poll_num = poll(fds, nfds, -1);
