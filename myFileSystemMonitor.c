@@ -110,7 +110,6 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
 {
     /* in order to send the data, we need to create a new socket */
     int sock;
-    char packet[2048];
     sturct sockaddr_in sendrSocket = {0};
 
     senderSocket.sin_family = AF_INET;
@@ -128,6 +127,27 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
         perror("connect");
         exit(1);
     }
+
+    char packet[2048];
+    memset(packet, 0, sizof(packet));
+    strcpy(packet, "\nFILE ACCESSED: ");
+	strcat(packet, main_str);
+	strcat(packet, "\nACCESS: ");
+	strcat(packet, op_str);
+	strcat(packet, "\nTIME OF ACCESS: ");
+	strcat(packet, time_str);
+	strcat(packet, "\n");
+	strcat(packet, "\0");
+
+	if ((int chsent = send(sock, packet, strlen(packet), 0)) < 0)
+	{
+		perror("recv");
+		exit(1);
+	}
+
+	close(sock);
+
+	exit(0);
 }
 
 int main(int argc, char *argv[])
