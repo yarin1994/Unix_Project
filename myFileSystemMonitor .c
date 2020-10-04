@@ -56,7 +56,7 @@ static void handle_events(int fd, int *wd, int fdHTML)
                 memset(timeStrBuf, 0, sizeof(timeStrBuf));
                 currTime = time(NULL);
                 timeInfo = localtime(&currTime);
-                strftime(timeStrBuf, 26, "%Y-%b-%d at %H:%M:%S", timeInfo); //%B
+                strftime(timeStrBuf, 32, "%Y-%b-%d at %H:%M:%S", timeInfo); //%B
                 write(fdHTML, timeStrBuf, strlen(timeStrBuf));
                 write(fdHTML, ": ", strlen(": "));
 
