@@ -12,7 +12,7 @@ char dir[100];
 char ip[32];
 
 static void handle_events(int fd, int wd, int fdHTML);
-//void sendToServer(char *time_str, char *op_str, char *main_str);
+void sendToServer(char *time_str, char *op_str, char *main_str);
 
 static void handle_events(int fd, int wd, int fdHTML)
 {
@@ -24,7 +24,6 @@ static void handle_events(int fd, int wd, int fdHTML)
     /* Loop while events can be read from inotify file descriptor. */
     for (;;)
     {
-
         /* Read some events. */
 
         len = read(fd, buf, sizeof buf);
@@ -40,7 +39,7 @@ static void handle_events(int fd, int wd, int fdHTML)
         /* Loop over all events in the buffer */
 
         char mainBuf[1024];
-        char timeStrBuf[32]; // YYYY-MM-DD HH-MM-SS
+        char timeStrBuf[32]; // YYYY-MMM-DD at HH-MM-SS
         char opBuf[16];
 
         for (ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len)
@@ -84,20 +83,19 @@ static void handle_events(int fd, int wd, int fdHTML)
             /* Print type of filesystem object */
 
             if (event->mask & IN_ISDIR)
-                write(fdHTML, " -> [dir]<br>", strlen(" -> [dir]<br>"));
+                write(fdHTML, " [dir]<br>", strlen(" [dir]<br>"));
             else
-                write(fdHTML, " -> [file]<br>", strlen(" -> [file]<br>"));
+                write(fdHTML, " [file]<br>", strlen(" [file]<br>"));
 
-            // sendToServer(timeStrBuf, opBuf, mainBuf);
+            sendToServer(timeStrBuf, opBuf, mainBuf);
         }
     }
 }
 
-// void sendToServer(char *time_str, char *op_str, char *main_str)
-// {
-//     /* in order to send the data, we need to create a new socket */
-
-// }
+void sendToServer(char *time_str, char *op_str, char *main_str)
+{
+    /* in order to send the data, we need to create a new socket */
+}
 
 int main(int argc, char *argv[])
 {
