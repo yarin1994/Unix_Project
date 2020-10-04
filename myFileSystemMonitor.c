@@ -2,11 +2,25 @@
 #include <poll.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <sys/socket.h>
 #include <sys/inotify.h>
 #include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #include <string.h>
 #include <time.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <arpa/inet.h>
+#include <sys/wait.h>
+#include <pthread.h>
+#include <signal.h>
+#include <strings.h>
+#include <stdlib.h>
+#include <semaphore.h>
+#include <execinfo.h>
+#include <libcli.h>
 
 char dir[100];
 char ip[32];
@@ -97,7 +111,23 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     /* in order to send the data, we need to create a new socket */
     int sock;
     char packet[2048];
-    
+    sturct sockaddr_in sendrSocket = {0};
+
+    senderSocket.sin_family = AF_INET;
+    senderSocket.sin_port = htons(5555);
+
+    if (inet_pton(AF_INET, ip, &senderSocket.sin_addr.s_addr) <= 0)
+    {
+        perror("\nAddress was not found!");
+        exit(1);
+    }
+
+    sock = socket(AF_INET, SOCK_DGRAM, 0);
+    if (connect(sock, (struct sockaddr *)&senserSocket, sizeof(senderSocket)) < 0)
+    {
+        perror("connect");
+        exit(1);
+    }
 }
 
 int main(int argc, char *argv[])
@@ -178,7 +208,7 @@ int main(int argc, char *argv[])
 
     write(fdHTML, "<html><body>", strlen("<html><body>"));
     printf("Listening for events.\n");
-    
+
     while (1)
     {
         poll_num = poll(fds, nfds, -1);
