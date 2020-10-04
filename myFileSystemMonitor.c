@@ -12,7 +12,7 @@ char dir[100];
 char ip[32];
 
 static void handle_events(int fd, int *wd, int fdHTML);
-void sendToServer(char *time_str, char *op_str, char *main_str);
+//void sendToServer(char *time_str, char *op_str, char *main_str);
 
 static void handle_events(int fd, int *wd, int fdHTML)
 {
@@ -89,16 +89,16 @@ static void handle_events(int fd, int *wd, int fdHTML)
             else
                 write(fdHTML, " -> [file]<br>", strlen(" -> [file]<br>"));
 
-            sendToServer(timeStrBuf, opBuf, mainBuf);
+            // sendToServer(timeStrBuf, opBuf, mainBuf);
         }
     }
 }
 
-void sendToServer(char *time_str, char *op_str, char *main_str)
-{
-    /* in order to send the data, we need to create a new socket */
+// void sendToServer(char *time_str, char *op_str, char *main_str)
+// {
+//     /* in order to send the data, we need to create a new socket */
 
-}
+// }
 
 int main(int argc, char *argv[])
 {
