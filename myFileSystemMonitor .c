@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
     }
 
     fdHTML = open("/var/www/html/index.html", O_WRONLY | O_TRUNC);
-    // im here
+
     if (fdHTML == -1)
         perror("open failed");
 
