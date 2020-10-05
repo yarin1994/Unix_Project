@@ -25,6 +25,7 @@
 char dir[100];
 char ip[32];
 
+void BackTrace();
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
 
@@ -72,7 +73,7 @@ static void handle_events(int fd, int wd, int fdHTML)
                 write(fdHTML, ": ", strlen(": "));
 
                 if (event->mask & IN_CLOSE_NOWRITE)
-                    strcpy(opBuf, "READ");
+                    strcpy(opBuf, "READ: ");
                 if (event->mask & IN_CLOSE_WRITE)
                     strcpy(opBuf, "WRITE: ");
             }
@@ -101,10 +102,10 @@ static void handle_events(int fd, int wd, int fdHTML)
 
             pid = fork();
 
-            if(pid == -1)
+            if (pid == -1)
                 perror("fork faliure");
-            
-            if(pid == 0)
+
+            if (pid == 0)
                 sendToServer(timeStrBuf, opBuf, mainBuf);
         }
     }
@@ -154,30 +155,32 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     exit(0);
 }
 
-void
-       myfunc3(void)
-       {
-           int j, nptrs;
-           void *buffer[BT_BUF_SIZE];
-           char **strings;
+void BackTrace()
+{
+    int nptrs;
+    void *buffer[1024];
+    char **strings;
 
-           nptrs = backtrace(buffer, BT_BUF_SIZE);
-           printf("backtrace() returned %d addresses\n", nptrs);
+    memset(buffer,0,sizof(buffer));
 
-           /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
+    nptrs = backtrace(buffer, 1024);
+    printf("backtrace() returned %d addresses\n", nptrs);
+
+    /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
               would produce similar output to the following: */
 
-           strings = backtrace_symbols(buffer, nptrs);
-           if (strings == NULL) {
-               perror("backtrace_symbols");
-               exit(EXIT_FAILURE);
-           }
+    strings = backtrace_symbols(buffer, nptrs);
+    if (strings == NULL)
+    {
+        perror("backtrace_symbols");
+        exit(EXIT_FAILURE);
+    }
 
-           for (j = 0; j < nptrs; j++)
-               printf("%s\n", strings[j]);
+    for (int j = 0; j < nptrs; j++)
+        printf("%s\n", strings[j]);
 
-           free(strings);
-       }
+    free(strings);
+}
 
 int main(int argc, char *argv[])
 {
