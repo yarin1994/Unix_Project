@@ -72,7 +72,7 @@ static void handle_events(int fd, int wd, int fdHTML)
                 write(fdHTML, ": ", strlen(": "));
 
                 if (event->mask & IN_CLOSE_NOWRITE)
-                    strcpy(opBuf, "READ");
+                    strcpy(opBuf, "READ: ");
                 if (event->mask & IN_CLOSE_WRITE)
                     strcpy(opBuf, "WRITE: ");
             }
