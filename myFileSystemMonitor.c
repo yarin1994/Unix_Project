@@ -26,6 +26,7 @@ char dir[100];
 char ip[32];
 
 void BackTrace();
+void telnetBT();
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
 
@@ -180,6 +181,26 @@ void BackTrace()
         printf("%s\n", strings[j]);
 
     free(strings);
+}
+
+void telnetBT(){
+    struct sockaddr_in servaddr;
+	struct cli_command *c;
+	struct cli_def *cli;
+	int on = 1, x, s;
+
+	// Must be called first to setup data structures
+	cli = cli_init();
+
+	// Set the hostname (shown in the the prompt)
+	cli_set_hostname(cli, "test");
+
+	// Set the greeting
+	cli_set_banner(cli, "Welcome to the CLI test program.");
+    
+    // Enable 2 username / password combinations
+	cli_allow_user(cli, "fred", "nerk");
+	cli_allow_user(cli, "foo", "bar");
 }
 
 int main(int argc, char *argv[])
