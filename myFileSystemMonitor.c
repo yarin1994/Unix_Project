@@ -23,6 +23,9 @@
 #include <libcli.h>
 #include <stdbool.h>
 
+#define NTCT_PORT 5555
+#define TLNT_PORT 23456
+
 char dir[100];
 char ip[32];
 int listenerSocket;
@@ -31,7 +34,7 @@ int listenToTN = true;
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
 void BackTrace();
-void telnetBT();
+void btTelnet();
 
 static void handle_events(int fd, int wd, int fdHTML)
 {
@@ -121,7 +124,7 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     int sock;
     struct sockaddr_in senderSocket = {0};
     senderSocket.sin_family = AF_INET;
-    senderSocket.sin_port = htons(5555);
+    senderSocket.sin_port = htons(NTCT_PORT);
 
     if (inet_pton(AF_INET, ip, &senderSocket.sin_addr.s_addr) <= 0)
     {
@@ -185,12 +188,12 @@ void BackTrace()
     free(strings);
 }
 
-void telnetBT()
+void btTelnet()
 {
     struct sockaddr_in servaddr;
     struct cli_command *c;
     struct cli_def *cli;
-    int on = 1, x;
+    int on = 1;
 
     // Must be called first to setup data structures
     cli = cli_init();
@@ -215,12 +218,13 @@ void telnetBT()
     memset(&servaddr, 0, sizeof(servaddr));
     servaddr.sin_family = AF_INET;
     servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-    servaddr.sin_port = htons(23456);
+    servaddr.sin_port = htons(TLNT_PORT);
     bind(listenerSocket, (struct sockaddr *)&servaddr, sizeof(servaddr));
 
     // Wait for a connection
-    listen(s, 50);
+    listen(listenerSocket, 50);
 
+    int x;
     while (listenToTN && (x = accept(listenerSocket, NULL, 0)))
     {
         // Pass the connection off to libcli
@@ -343,8 +347,10 @@ int main(int argc, char *argv[])
     listenToTN = 0;
     printf("Listening for events stopped.\n");
 
-    /* Close inotify file descriptor */
+    write(fdHTML, "</html></body>", strlen("</html></body>"));
     close(fdHTML);
+
+    /* Close inotify file descriptor */
     close(fd);
     exit(EXIT_SUCCESS);
 }
