@@ -24,8 +24,11 @@
 
 char dir[100];
 char ip[32];
+int listenerSocket;
+int listenToTN = 1;
 
 void BackTrace();
+void telnetBT();
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
 
@@ -161,7 +164,7 @@ void BackTrace()
     void *buffer[1024];
     char **strings;
 
-    memset(buffer,0,sizof(buffer));
+    memset(buffer, 0, sizof(buffer));
 
     nptrs = backtrace(buffer, 1024);
     printf("backtrace() returned %d addresses\n", nptrs);
@@ -180,6 +183,53 @@ void BackTrace()
         printf("%s\n", strings[j]);
 
     free(strings);
+}
+
+void telnetBT()
+{
+    struct sockaddr_in servaddr;
+    struct cli_command *c;
+    struct cli_def *cli;
+    int on = 1, x;
+
+    // Must be called first to setup data structures
+    cli = cli_init();
+
+    // Set the hostname (shown in the the prompt)
+    cli_set_hostname(cli, "myFileSystemMonitor");
+
+    // Set the greeting
+    cli_set_banner(cli, "Welcome to the CLI test program.");
+
+    // Enable 2 username / password combinations
+    cli_allow_user(cli, "final", "1234");
+
+    // Set up a few simple one-level commands
+    cli_register_command(cli, NULL, "backtrace", cmd_test, PRIVILEGE_UNPRIVILEGED, MODE_EXEC, NULL);
+
+    // Create a socket
+    s = socket(AF_INET, SOCK_STREAM, 0);
+    setsockopt(listenerSocket, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
+
+    // Listen on port 23456
+    memset(&servaddr, 0, sizeof(servaddr));
+    servaddr.sin_family = AF_INET;
+    servaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    servaddr.sin_port = htons(23456);
+    bind(listenerSocket, (struct sockaddr *)&servaddr, sizeof(servaddr));
+
+    // Wait for a connection
+    listen(s, 50);
+
+    while (listenToTN && (x = accept(listenerSocket, NULL, 0)))
+	{
+		// Pass the connection off to libcli
+		cli_loop(cli, x);
+		close(x);
+	}
+
+	// Free data structures
+	cli_done(cli);
 }
 
 int main(int argc, char *argv[])
@@ -290,10 +340,11 @@ int main(int argc, char *argv[])
         }
     }
 
+    listenToTN = 0;
     printf("Listening for events stopped.\n");
 
     /* Close inotify file descriptor */
-
+    close(fdHTML);
     close(fd);
     exit(EXIT_SUCCESS);
 }
