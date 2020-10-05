@@ -21,16 +21,17 @@
 #include <semaphore.h>
 #include <execinfo.h>
 #include <libcli.h>
+#include <stdbool.h>
 
 char dir[100];
 char ip[32];
 int listenerSocket;
-int listenToTN = 1;
+int listenToTN = true;
 
-void BackTrace();
-void telnetBT();
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
+void BackTrace();
+void telnetBT();
 
 static void handle_events(int fd, int wd, int fdHTML)
 {
@@ -39,6 +40,7 @@ static void handle_events(int fd, int wd, int fdHTML)
     ssize_t len;
     char *ptr;
     pid_t pid;
+
     /* Loop while events can be read from inotify file descriptor. */
     for (;;)
     {
@@ -104,7 +106,6 @@ static void handle_events(int fd, int wd, int fdHTML)
                 write(fdHTML, " [file]<br>", strlen(" [file]<br>"));
 
             pid = fork();
-
             if (pid == -1)
                 perror("fork faliure");
 
@@ -117,7 +118,6 @@ static void handle_events(int fd, int wd, int fdHTML)
 void sendToServer(char *time_str, char *op_str, char *main_str)
 {
     /* in order to send the data, we need to create a new socket */
-
     int sock;
     struct sockaddr_in senderSocket = {0};
     senderSocket.sin_family = AF_INET;
@@ -179,8 +179,8 @@ void BackTrace()
         exit(EXIT_FAILURE);
     }
 
-    for (int j = 0; j < nptrs; j++)
-        printf("%s\n", strings[j]);
+    for (int i = 0; i < nptrs; i++)
+        printf("%s\n", strings[i]);
 
     free(strings);
 }
@@ -222,14 +222,14 @@ void telnetBT()
     listen(s, 50);
 
     while (listenToTN && (x = accept(listenerSocket, NULL, 0)))
-	{
-		// Pass the connection off to libcli
-		cli_loop(cli, x);
-		close(x);
-	}
+    {
+        // Pass the connection off to libcli
+        cli_loop(cli, x);
+        close(x);
+    }
 
-	// Free data structures
-	cli_done(cli);
+    // Free data structures
+    cli_done(cli);
 }
 
 int main(int argc, char *argv[])
