@@ -7,8 +7,8 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <fcntl.h>
 #include <string.h>
+#include <fcntl.h>
 #include <time.h>
 #include <netinet/in.h>
 #include <netdb.h>
@@ -49,12 +49,11 @@ static void handle_events(int fd, int wd, int fdHTML)
         if (len <= 0)
             break;
 
-        /* Loop over all events in the buffer */
-
-        char mainBuf[1024];
-        char timeStrBuf[32]; // YYYY-MMM-DD at HH-MM-SS
         char opBuf[16];
+        char timeStrBuf[32]; // DD-MMM-YYYY at HH-MM-SS
+        char mainBuf[1024];
 
+        /* Loop over all events in the buffer */
         for (ptr = buf; ptr < buf + len; ptr += sizeof(struct inotify_event) + event->len)
         {
             time_t currTime;
@@ -68,12 +67,12 @@ static void handle_events(int fd, int wd, int fdHTML)
                 memset(timeStrBuf, 0, sizeof(timeStrBuf));
                 currTime = time(NULL);
                 timeInfo = localtime(&currTime);
-                strftime(timeStrBuf, 32, "%Y-%b-%d at %H:%M:%S", timeInfo); //%B
+                strftime(timeStrBuf, 32, "%d-%b-%Y at %H:%M:%S", timeInfo); //%B
                 write(fdHTML, timeStrBuf, strlen(timeStrBuf));
                 write(fdHTML, ": ", strlen(": "));
 
                 if (event->mask & IN_CLOSE_NOWRITE)
-                    strcpy(opBuf, "NO_WRITE: ");
+                    strcpy(opBuf, "READ");
                 if (event->mask & IN_CLOSE_WRITE)
                     strcpy(opBuf, "WRITE: ");
             }
@@ -116,14 +115,14 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
 
     if (inet_pton(AF_INET, ip, &senderSocket.sin_addr.s_addr) <= 0)
     {
-        perror("\nAddress was not found!");
+        perror("Address was not found!");
         exit(1);
     }
 
     sock = socket(AF_INET, SOCK_DGRAM, 0);
     if (connect(sock, (struct sockaddr *)&senderSocket, sizeof(senderSocket)) < 0)
     {
-        perror("connect");
+        perror("Connection Failure");
         exit(1);
     }
 
@@ -136,13 +135,12 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     strcat(packet, op_str);
     strcat(packet, "\nTIME OF ACCESS: ");
     strcat(packet, time_str);
-    strcat(packet, "\n");
-    strcat(packet, "\0");
+    strcat(packet, "\n\0");
 
     int chsent;
     if ((chsent = send(sock, packet, strlen(packet), 0)) < 0)
     {
-        perror("recv");
+        perror("receive Failure");
         exit(1);
     }
 
@@ -242,12 +240,9 @@ int main(int argc, char *argv[])
 
         if (poll_num > 0)
         {
-
             if (fds[0].revents & POLLIN)
             {
-
                 /* Console input is available. Empty stdin and quit */
-
                 while (read(STDIN_FILENO, &buf, 1) > 0 && buf != '\n')
                     continue;
                 break;
