@@ -34,7 +34,7 @@ static void handle_events(int fd, int wd, int fdHTML)
     const struct inotify_event *event;
     ssize_t len;
     char *ptr;
-
+    pid_t pid;
     /* Loop while events can be read from inotify file descriptor. */
     for (;;)
     {
@@ -99,7 +99,13 @@ static void handle_events(int fd, int wd, int fdHTML)
             else
                 write(fdHTML, " [file]<br>", strlen(" [file]<br>"));
 
-            sendToServer(timeStrBuf, opBuf, mainBuf);
+            pid = fork();
+
+            if(pid == -1)
+                perror("fork faliure");
+            
+            if(pid == 0)
+                sendToServer(timeStrBuf, opBuf, mainBuf);
         }
     }
 }
@@ -147,6 +153,31 @@ void sendToServer(char *time_str, char *op_str, char *main_str)
     close(sock);
     exit(0);
 }
+
+void
+       myfunc3(void)
+       {
+           int j, nptrs;
+           void *buffer[BT_BUF_SIZE];
+           char **strings;
+
+           nptrs = backtrace(buffer, BT_BUF_SIZE);
+           printf("backtrace() returned %d addresses\n", nptrs);
+
+           /* The call backtrace_symbols_fd(buffer, nptrs, STDOUT_FILENO)
+              would produce similar output to the following: */
+
+           strings = backtrace_symbols(buffer, nptrs);
+           if (strings == NULL) {
+               perror("backtrace_symbols");
+               exit(EXIT_FAILURE);
+           }
+
+           for (j = 0; j < nptrs; j++)
+               printf("%s\n", strings[j]);
+
+           free(strings);
+       }
 
 int main(int argc, char *argv[])
 {
