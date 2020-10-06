@@ -29,7 +29,7 @@
 char dir[100];
 char ip[32];
 int listenerSocket;
-int listenToTN = true;
+bool listenToTN = true;
 
 static void handle_events(int fd, int wd, int fdHTML);
 void sendToServer(char *time_str, char *op_str, char *main_str);
