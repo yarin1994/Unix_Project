@@ -23,6 +23,7 @@
 #include <libcli.h>
 #include <stdbool.h>
 
+// updated
 #define NTCT_PORT 5555
 #define TLNT_PORT 23456
 
